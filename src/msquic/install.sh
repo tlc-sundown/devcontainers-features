@@ -5,8 +5,10 @@
 
 # package to install
 export msquic_package=${package:-"libmsquic"}
-export msquic_version=${version:-"latest"}
-export verbose=${verbose:-false}
+# options supported
+export msquic_version=${VERSION:-"latest"}
+export verbose=${VERBOSE:-false}
+# end of options supported
 
 # Stop script on NZEC
 set -e

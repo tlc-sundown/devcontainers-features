@@ -14,5 +14,6 @@
             "msquic": {
                 "version": "latest"
             }
+        }
     }
 }
