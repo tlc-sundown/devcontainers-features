@@ -1,0 +1,17 @@
+{
+    "install_msquic_1_9_1_on_dotnet_6": {
+        "image": "mcr.microsoft.com/devcontainers/dotnet:6.0-bullseye-slim",
+        "features": {
+            "msquic": {
+                "version": "1.9.1"
+            }
+        }
+    },
+    "install_msquic_latest_on_dotnet_7": {
+        "image": "mcr.microsoft.com/dotnet/sdk:7.0-bullseye-slim",
+        "features": {
+            "msquic": {
+                "version": "latest"
+            }
+    }
+}
