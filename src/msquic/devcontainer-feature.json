@@ -1,0 +1,25 @@
+{
+    "name": "msquic",
+    "id": "msquic",
+    "version": "1.0.0",
+    "description": "A feature to install the MsQuic library",
+    "documentationURL": "https://github.com/tlc-sundown/devcontainers-features/tree/main/src/msquic",
+    "options": {
+        "version": {
+            "type": "string",
+            "proposals": [
+                "latest",
+                "2.1.5",
+                "2.1.0",
+                "2.0.6",
+                "2.0.0",
+                "1.9.0"
+            ],
+            "default": "latest",
+            "description": "Select or enter an MsQuic library version"
+        }
+    },
+    "installsAfter": [
+        "ghcr.io/devcontainers/features/common-utils"
+    ]
+}
