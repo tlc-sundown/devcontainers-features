@@ -28,9 +28,18 @@ if [ -t 1 ] && command -v tput > /dev/null; then
     fi
 fi
 
+# Use in the the functions: eval $invocation
+invocation='say_verbose "Calling: ${yellow:-}${FUNCNAME[0]} ${green:-}$*${normal:-}"'
+
 say() {
     # using stream 3 to not interfere with stdout of functions which may be used as return value
     printf "%b\n" "${cyan:-}msquic_install:${normal:-} $1" >&3
+}
+
+say_verbose() {
+    if [ "$verbose" = true ]; then
+        say "$1"
+    fi
 }
 
 say_warning() {
@@ -44,51 +53,46 @@ say_err() {
 # Ensure apt is in non-interactive mode to avoid prompts
 export DEBIAN_FRONTEND=noninteractive
 
-apt_get_update()
-{
-    if [ "$(find /var/lib/apt/lists/* | wc -l)" = "0" ]; then
-        echo "Running apt-get update..."
-        apt-get update -y
-    fi
-}
+machine_has() {
+    eval $invocation
 
-check_pre_reqs()
-{
-    local package_list=""
+    dpkg-query -Wf '${Package} ${Status}\n' "$1" | grep "^$1 .* installed" 2>&1
 
-    # Install software-properties-common if necessary
-    if [[ -z $(apt-cache --names-only search ^software-properties-common$) ]]; then
-        package_list="${package_list} software-properties-common"
-    fi
-
-    # Install gnupg if necessary
-    if [[ -z $(apt-cache --names-only search ^gnupg$) ]]; then
-        package_list="${package_list} gnupg"
-    fi
-
-    # Install wget if necessary
-    if [[ -z $(apt-cache --names-only search ^wget$) ]]; then
-        package_list="${package_list} wget"
-    fi
-
-    echo ${package_list}
-    return 0
+    return $?
 }
 
 apt_get_install_pre_reqs()
 {
+    eval $invocation
+
     # Identifying missing packages
-    local package_list="$(check_pre_reqs)" || return 1
-    if [ ! -z "${package_list}" ]; then
+    local pre_reqs=("software-properties-common" "gnupg" "wget")
+    local package_list=""
+    
+    for p in ${pre_reqs[@]}; do
+        if machine_has "${p}"; then
+            say_verbose "${p} already installed"
+        else
+            say_verbose "${p} installation needed"
+            package_list="${package_list} ${p}"
+        fi
+    done
+
+    if [ -z "${package_list}" ]; then
+        say "All pre-requities checked"
+    else
         # Install pre-reqs packages
         say "Installing packages: [${package_list}]"
         apt-get -y install --no-install-recommends ${package_list}
     fi
+
     return 0
 }
 
 add_microsoft_repo()
 {
+    eval $invocation
+
     # Download gpg armored key
     wget -O- https://packages.microsoft.com/keys/microsoft.asc |\
         gpg --dearmor |\
@@ -98,13 +102,17 @@ add_microsoft_repo()
     # Add repository into the list of sources
     echo "deb [signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/${ID}/${VERSION_ID}/prod ${VERSION_CODENAME} main" |\
         tee /etc/apt/sources.list.d/packages.microsoft.com.list
+
     return 0
 }
 
 ver()
 {
+    eval $invocation
+
     local version=$(dpkg-query -Wf '${Version}\n' "$1")
     echo "${version}"
+
     return 0
 }
 
@@ -114,11 +122,11 @@ package="libmsquic"
 [ "${version}" = "latest" ] && unset version
 
 say "Configuring the package feed..."
-apt_get_update
+apt-get update -y
 apt_get_install_pre_reqs
 add_microsoft_repo
 apt-get update -y
-say "[packages.microsoft.com] feed added"
+say "repository [packages.microsoft.com] added"
 
 say "Installing ${package}..."
 apt-get -y install --no-install-recommends ${package}${version:+=$version}
