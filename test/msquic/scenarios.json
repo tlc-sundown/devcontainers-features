@@ -3,7 +3,8 @@
         "image": "mcr.microsoft.com/devcontainers/dotnet:6.0-bullseye-slim",
         "features": {
             "msquic": {
-                "version": "1.9.1"
+                "version": "1.9.1",
+                "verbose": true
             }
         }
     },

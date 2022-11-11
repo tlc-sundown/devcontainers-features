@@ -3,6 +3,11 @@
 # MsQuic: https://github.com/microsoft/msquic
 # Linux Software Repository: https://learn.microsoft.com/en-us/windows-server/administration/linux-package-repository-for-microsoft-software
 
+# package to install
+export msquic_package=${package:-"libmsquic"}
+export msquic_version=${version:-"latest"}
+export verbose=${verbose:-false}
+
 # Stop script on NZEC
 set -e
 
@@ -97,12 +102,13 @@ add_microsoft_repo()
     wget -O- https://packages.microsoft.com/keys/microsoft.asc |\
         gpg --dearmor |\
         tee /usr/share/keyrings/microsoft.gpg > /dev/null
+    say_verbose "gpg key saved to [/usr/share/keyrings/microsoft.gpg]"
     # Bring in variables from /etc/os-release like VERSION_ID
     . /etc/os-release
     # Add repository into the list of sources
     echo "deb [signed-by=/usr/share/keyrings/microsoft.gpg] https://packages.microsoft.com/${ID}/${VERSION_ID}/prod ${VERSION_CODENAME} main" |\
         tee /etc/apt/sources.list.d/packages.microsoft.com.list
-
+    say_verbose "repo added to [/etc/apt/sources.list.d/packages.microsoft.com.list]"
     return 0
 }
 
@@ -116,10 +122,8 @@ ver()
     return 0
 }
 
-# package to install
-package="libmsquic"
 # version to install (version is ignored if `latest` is requested)
-[ "${version}" = "latest" ] && unset version
+[ "${msquic_version}" = "latest" ] && unset msquic_version
 
 say "Configuring the package feed..."
 apt-get update -y
@@ -128,7 +132,7 @@ add_microsoft_repo
 apt-get update -y
 say "repository [packages.microsoft.com] added"
 
-say "Installing ${package}..."
-apt-get -y install --no-install-recommends ${package}${version:+=$version}
-final_version=$(ver ${package})
-say "${package} ${final_version} installed"
+say "Installing ${msquic_package}..."
+apt-get -y install --no-install-recommends ${msquic_package}${msquic_version:+=$msquic_version}
+final_version=$(ver ${msquic_package})
+say "${msquic_package} ${final_version} installed"

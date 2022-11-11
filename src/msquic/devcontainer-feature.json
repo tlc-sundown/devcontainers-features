@@ -17,6 +17,11 @@
             ],
             "default": "latest",
             "description": "Select or enter an MsQuic library version"
+        },
+        "verbose": {
+            "type": "boolean",
+            "default": false,
+            "description": "Enable verbose mode during install"
         }
     },
     "installsAfter": [
